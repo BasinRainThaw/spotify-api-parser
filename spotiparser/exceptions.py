@@ -7,3 +7,6 @@ class RateLimitError(SpotiparserError):
         self.retry_after = retry_after
         super().__init__(message)
 
+class ScraperError(SpotiparserError):
+    """Raised when html structure changes"""
+    pass
