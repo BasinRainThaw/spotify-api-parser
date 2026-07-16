@@ -13,3 +13,7 @@ def test_parse_valid_json():
     data = parse_spotify_state(SAMPLE_HTML)
     assert data["tracks"]["123"]["name"] == "Song A"
 
+def test_parse_missing_script():
+    with pytest.raises(ValueError, match="Could not find initial state"):
+        parse_spotify_state("<html><body>nothing</body></html>")
+
