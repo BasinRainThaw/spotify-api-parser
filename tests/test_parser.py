@@ -17,3 +17,7 @@ def test_parse_missing_script():
     with pytest.raises(ValueError, match="Could not find initial state"):
         parse_spotify_state("<html><body>nothing</body></html>")
 
+def test_parse_corrupt_json():
+    bad_html = '<script id="initial-state" type="application/json">{invalid: json}</script>'
+    with pytest.raises(ValueError, match="Failed to parse JSON content"):
+        parse_spotify_state(bad_html)
