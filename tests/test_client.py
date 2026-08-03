@@ -18,13 +18,23 @@ async def test_get_playlist_success():
 @respx.mock
 @pytest.mark.asyncio
 async def test_retry_on_429():
-    client = SpotifyClient(retries=1)
-    # first call 429, second 200
-    route = respx.get("https://open.spotify.com/playlist/123").side_effect = [
+    # we use a very short backoff in tests to avoid slowing down the suite
+    client = SpotifyClient(retries=1, backoff_factor=0.01)
+    
+    url = "https://open.spotify.com/playlist/123"
+    respx.get(url).side_effect = [
         Response(429),
         Response(200, content='<script id="initial-state" type="application/json">{"retry": "worked"}</script>')
     ]
     
-    # print("debugging retries...") # left this here to check why it was failing on CI
     res = await client.get_playlist("123")
     assert res["retry"] == "worked"
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_handle_not_found():
+    client = SpotifyClient()
+    respx.get("https://open.spotify.com/playlist/missing").mock(return_value=Response(404))
+    
+    with pytest.raises(RuntimeError, match="404"):
+        await client.get_playlist("missing")
